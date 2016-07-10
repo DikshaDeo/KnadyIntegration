@@ -4,7 +4,8 @@
 var projectAPIKey = "DAK4a53e88da8d64cbda25fe159c49c2240";
 var username = "amar@acidcorporation.gmail.com";
 var password = "acid_123";
-
+// Keep track of screensharing status.
+var isSharing = false;
 // Setup Kandy to make and receive calls.
 kandy.setup({
     // Designate HTML elements to be our stream containers.
@@ -16,7 +17,13 @@ kandy.setup({
         callinitiated: onCallInitiated,
         callincoming: onCallIncoming,
         callestablished: onCallEstablished,
-        callended: onCallEnded
+        callended: onCallEnded,
+        media: onMediaError,
+        callscreenstopped: onStopSuccess
+    },
+    // Reference the default Chrome extension.
+    screenSharing: {
+        chromeExtensionId: 'daohbhpgnnlgkipndobecbmahalalhcp'
     }
 });
 
@@ -116,6 +123,7 @@ function onCallEstablished(call) {
     document.getElementById("mute-call").disabled = false;
     document.getElementById("hold-call").disabled = false;
     document.getElementById("end-call").disabled = false;
+    document.getElementById("screensharing").disabled = false;
 }
 
 // End a call.
@@ -165,6 +173,7 @@ function onCallEnded(call) {
     document.getElementById("mute-call").disabled = true;
     document.getElementById("hold-call").disabled = true;
     document.getElementById("end-call").disabled = true;
+    document.getElementById('screensharing').disabled = true;
 
     // Call no longer active, reset mute and hold statuses.
     isMuted = false;
@@ -233,4 +242,44 @@ function onSessionUserJoinRequest(data) {
 // Provide feedback about failure
 function onSessionFailure(message) {
     log('Error Joining/Creating Session');
+}
+// Called when the media event is triggered.
+function onMediaError(error) {
+    switch (error.type) {
+        case kandy.call.MediaErrors.NOT_FOUND:
+            console.log("No WebRTC support was found.");
+            break;
+        case kandy.call.MediaErrors.NO_SCREENSHARING_WARNING:
+            console.log("WebRTC supported, but no screensharing support was found.");
+            break;
+        default:
+            console.log('Other error or warning encountered.');
+            break;
+    }
+}
+function onStopSuccess() {
+    log('Screensharing stopped.');
+    isSharing = false;
+}
+function ScreenShare()
+{
+    var optionsShare = {
+        width: 200,
+        height: 200,
+        framerate: 15
+    };
+    kandy.call.startScreenSharing(callId, onStartSuccess, onStartFailure, optionsShare);
+}
+
+
+// What to do on a successful screenshare start.
+function onStartSuccess() {
+    log('Screensharing started.');
+    isSharing = true;
+}
+
+
+// What to do on a failed screenshare start.
+function onStartFailure() {
+    log('Failed to start screensharing.');
 }

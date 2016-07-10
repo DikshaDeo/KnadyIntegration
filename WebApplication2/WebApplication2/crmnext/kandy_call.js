@@ -7,6 +7,7 @@ var projectAPIKey = "DAK4a53e88da8d64cbda25fe159c49c2240";
 var username = "aman@acidcorporation.gmail.com";
 var password = "acid_123";
 var sessionId;
+var isSharing = false;
 // Setup Kandy to make and receive calls.
 kandy.setup({
     // Designate HTML elements to be our stream containers.
@@ -18,7 +19,13 @@ kandy.setup({
         callinitiated: onCallInitiated,
         callincoming: onCallIncoming,
         callestablished: onCallEstablished,
-        callended: onCallEnded
+        callended: onCallEnded,
+        media: onMediaError,
+        callscreenstopped: onStopSuccess
+    },
+    // Reference the default Chrome extension.
+    screenSharing: {
+        chromeExtensionId: 'daohbhpgnnlgkipndobecbmahalalhcp'
     }
 });
 
@@ -211,4 +218,42 @@ function onSessionJoinSuccess() {
 }
 function onSessionFailure(message) {
     log('Error Joining/Creating Session');
+}
+function onStopSuccess() {
+    log('Screensharing stopped.');
+    isSharing = false;
+}
+
+function onMediaError(error) {
+    switch (error.type) {
+        case kandy.call.MediaErrors.NOT_FOUND:
+            log("No WebRTC support was found.");
+            break;
+        case kandy.call.MediaErrors.NO_SCREENSHARING_WARNING:
+            log("WebRTC supported, but no screensharing support was found.");
+            break;
+        default:
+            log('Other error or warning encountered.');
+            break;
+    }
+}
+function ScreenShare() {
+    var optionsShare = {
+        width: 200,
+        height: 200,
+        framerate: 15
+    };
+    kandy.call.startScreenSharing(callId, onStartSuccess, onStartFailure, optionsShare);
+    //kandy.call.startScreenSharing(callId, onStartSuccess, onStartFailure);
+}
+
+// What to do on a successful screenshare start.
+function onStartSuccess() {
+    console.log('Screensharing started.');
+    isSharing = true;
+}
+
+// What to do on a failed screenshare start.
+function onStartFailure() {
+    console.log('Failed to start screensharing.');
 }
