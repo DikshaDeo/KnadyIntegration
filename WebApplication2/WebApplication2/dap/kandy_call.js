@@ -217,25 +217,20 @@ function onSessionCreateSuccess(session) {
     log('session created for amar ');
     kandy.session.activate(sessionId);
     kandy.session.setListeners(sessionId, {
-        onUserJoinRequest: onSessionUserJoinRequest,
-        onData: onSendingData 
+        onUserJoinRequest: onSessionUserJoinRequest
     });
 
-    log('Screen is shared  Agent');
-    kandy.coBrowsing.startBrowsingUser(sessionId);
-    // startCall();
 }
 
 // Automatically accept join requests
 function onSessionUserJoinRequest(data) {
     kandy.session.acceptJoinRequest(data.session_id, data.full_user_id);
+
+    log('Screen is shared  Agent');
+    kandy.coBrowsing.startBrowsingUser(sessionId);
+    // startCall();
 }
 // Provide feedback about failure
 function onSessionFailure(message) {
     log('Error Joining/Creating Session');
-}
-
-function onSendingData()
-{
-
 }
